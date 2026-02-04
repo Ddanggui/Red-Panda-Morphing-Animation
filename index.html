@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>RedpandaUI</title>
+    <style>
+        :root {
+            --fur-color: #C0732A;
+            --bg-color: #593513;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            font-family: sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .stage {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            touch-action: manipulation;
+        }
+
+        .hint {
+            position: absolute;
+            bottom: 15%;
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 16px;
+            pointer-events: none;
+            transition: opacity 0.5s;
+            z-index: 10;
+        }
+
+        #panda-svg {
+            width: min(90vw, 600px); 
+            height: auto;
+            overflow: visible;
+            transform-origin: center center;
+            transition: opacity 0.8s ease-in-out; 
+        }
+
+        #final-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none; 
+            opacity: 0; 
+            z-index: 20; 
+            transition: opacity 0.6s ease-out;
+        }
+
+        .head-wrapper {
+            transform-origin: center bottom;
+            animation: gentleShake 3s ease-in-out infinite;
+        }
+        
+        @keyframes gentleShake {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(-3deg); }
+            75% { transform: rotate(3deg); }
+        }
+
+
+        @keyframes dropMorph {
+            0% { transform: translateY(0) scale(1); }
+            30% { transform: translateY(20px) scaleX(0.4) scaleY(1.3); }
+            60% { transform: translateY(150px) scaleX(0.4) scaleY(1.3); }
+            85% { transform: translateY(45vh) scaleX(1.4) scaleY(0.6); }
+            100% { transform: translateY(48vh) scaleX(2.0) scaleY(1.0); opacity: 0; }
+        }
+
+        @keyframes noseShrink {
+            0% { 
+                transform: scale(10); 
+            }
+            100% { 
+                transform: scale(1); 
+            }
+        }
+
+        @keyframes noseDrop {
+            0% {
+                transform: translateY(0) scale(1);
+            }
+            100% {
+                transform: translateY(60vh) scale(0.8);
+            }
+        }
+
+
+        .features { transition: opacity 0.6s ease-out; }
+
+        body.stage-1 .features { opacity: 0; }
+        body.stage-1 .head-wrapper { animation: none; }
+
+        body.stage-2 .head-wrapper {
+            animation: dropMorph 0.8s cubic-bezier(0.6, -0.28, 0.735, 0.045) forwards;
+        }
+        body.stage-2 .features { display: none; }
+
+        body.stage-3 #final-overlay {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        
+        .nose-mask-shape {
+            transform-origin: 252px 253px; 
+            will-change: transform; 
+        }
+
+        body.stage-3:not(.falling) .nose-mask-shape {
+            animation: noseShrink 1.0s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+        }
+        
+        body.stage-3 #panda-svg { opacity: 0; }
+
+        body.falling .nose-mask-shape {
+            animation: noseDrop 0.8s cubic-bezier(0.55, 0.055, 0.675, 0.19) forwards;
+        }
+        
+        body.falling #final-overlay {
+            opacity: 0;
+            transition-delay: 0.2s; 
+        }
+        
+        body.falling #panda-svg {
+            opacity: 1;
+            transition-delay: 0.4s; 
+        }
+
+        body.animating .hint { opacity: 0; }
+    </style>
+</head>
+<body>
+
+    <div class="stage" id="stage">
+        
+        <svg id="panda-svg" viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg">
+            <g class="head-wrapper">
+                
+                <path class="features" d="M 279.554 128.323 C 245.804 223.986 300.963 279.74 352.738 194.764 L 279.554 128.323 Z" fill="#FFFFFF" style="stroke-width: 1.38; transform-box: fill-box; transform-origin: 50% 50%;" transform="matrix(-1, 0, 0, -1, 0.000045, -0.000023)"></path>
+                <path class="features" d="M 162.277 235.935 C 128.527 140.272 183.686 84.518 235.461 169.494 L 162.277 235.935 Z" fill="#FFFFFF" style="stroke-width: 1.38;"></path>
+                <ellipse class="features" style="fill: rgb(255, 255, 255); stroke-width: 1.38;" cx="337.238" cy="222.223" rx="15.264" ry="19.169"></ellipse>
+                <ellipse class="features" style="fill: rgb(255, 255, 255); stroke-width: 1.38px;" cx="163.65" cy="222.222" rx="15.264" ry="19.169"></ellipse>
+
+                <path class="skin-base" d="M 185.987 191.172 C 170.222 142.661 183.588 143.458 209.879 171.592 L 185.987 191.172 Z" fill="#C0732A" style="stroke-width: 1.38;"/>
+                <path class="skin-base" d="M 302.406 155.169 C 286.641 203.68 300.007 202.883 326.298 174.749 L 302.406 155.169 Z" fill="#C0732A" style="stroke-width: 1.38; transform-box: fill-box; transform-origin: 50% 50%;" transform="matrix(-1, 0, 0, -1, 0.000034, 0.000006)"/>
+                <ellipse class="skin-base" cx="249.556" cy="264.804" rx="109.849" ry="61.321" fill="#C0732A" style="stroke-width: 1.38;"/>
+                <circle class="skin-base" style="fill: rgb(192, 115, 42); stroke-width: 1.38px;" transform="matrix(0.94146, 0, 0, 0.88072, -86.023103, -102.669008)" cx="357.2" cy="383" r="105.2"/>
+
+                <path class="features" d="M 214.231 309.078 C 167.471 286.945 199.938 257.173 171.455 246.059 C 161.663 242.239 171.963 286.251 180.614 292.101 C 198.593 304.256 233.936 318.406 214.231 309.078 Z" fill="#FFFFFF" style="stroke-width: 1.38; transform-box: fill-box; transform-origin: 50% 50%;" transform="matrix(0.913545, 0.406737, -0.406737, 0.913545, 0, -0.000001)"/>
+                <path class="features" d="M 334.963 246.844 C 288.203 268.977 320.67 298.75 292.187 309.864 C 282.395 313.684 292.695 269.671 301.346 263.821 C 319.325 251.666 354.668 237.516 334.963 246.844 Z" fill="#FFFFFF" style="stroke-width: 1.38; transform-origin: 314.486px 276.961px;" transform="matrix(-0.913545, 0.406737, -0.406737, -0.913545, 0.000018, -0.000018)"/>
+                <circle class="features" cx="65" cy="65" r="7" fill="#FFFFFF" transform="matrix(1.346635, 0, 0, 1.413077, 142.226824, 113.625253)"/>
+                <circle class="features" cx="135" cy="65" r="7" fill="#FFFFFF" transform="matrix(1.346635, 0, 0, 1.413077, 96.630708, 113.641535)"/>
+                <circle class="features" cx="70" cy="95" r="9" fill="#4A2E1F" transform="matrix(1.346635, 0, 0, 1.413077, 122.347505, 95.875871)"/>
+                <circle class="features" cx="130" cy="95" r="9" fill="#4A2E1F" transform="matrix(1.346635, 0, 0, 1.413077, 117.37768, 95.875871)"/>
+                <ellipse class="features" cx="252.751" cy="266.865" rx="43.092" ry="31.088" fill="#FFFFFF" style="stroke-width: 1.38;"/>
+                <ellipse class="features" style="fill: rgb(255, 255, 255); stroke-width: 1.38px;" cx="253.461" cy="269.081" rx="51.118" ry="28.399"/>
+                <path class="features" d="M 236.592 244.89 C 247.365 240.18 258.138 240.18 268.911 244.89 C 268.911 254.311 263.524 261.376 252.751 266.086 C 241.978 261.376 236.592 254.311 236.592 244.89" fill="#4A2E1F" style="stroke-width: 1.38;"/>
+            </g>
+        </svg>
+
+        <svg id="final-overlay" viewBox="0 0 500 500" preserveAspectRatio="xMidYMid slice">
+            <defs>
+                <mask id="nose-hole-mask">
+                    <rect width="100%" height="100%" fill="white" />
+                    <path class="nose-mask-shape" d="M 236.592 244.89 C 247.365 240.18 258.138 240.18 268.911 244.89 C 268.911 254.311 263.524 261.376 252.751 266.086 C 241.978 261.376 236.592 254.311 236.592 244.89" fill="black" />
+                </mask>
+            </defs>
+            <rect width="100%" height="100%" fill="#C0732A" mask="url(#nose-hole-mask)" />
+        </svg>
+
+        <div class="hint" id="hintText"></div>
+    </div>
+
+    <script>
+        const stage = document.getElementById('stage');
+        const hintText = document.getElementById('hintText');
+        const body = document.body;
+        
+        let isAnimating = false;
+
+        stage.addEventListener('click', handleInteraction);
+
+        function handleInteraction() {
+            if (isAnimating) return; 
+
+            if (body.classList.contains('stage-3')) {
+                triggerNoseDropReset();
+                return;
+            }
+
+            startTransformation();
+        }
+
+        function startTransformation() {
+            isAnimating = true;
+            body.classList.add('animating');
+            
+            body.classList.add('stage-1');
+
+            setTimeout(() => {
+                body.classList.add('stage-2');
+                hintText.innerText = "";
+                
+                setTimeout(() => {
+                    body.classList.add('stage-3');
+                    isAnimating = false; 
+                }, 1000);
+
+            }, 600);
+        }
+
+        function triggerNoseDropReset() {
+            isAnimating = true;
+            body.classList.add('falling');
+
+            setTimeout(() => {
+                body.classList.remove('falling', 'stage-1', 'stage-2', 'stage-3', 'animating');
+
+                isAnimating = false;
+            }, 1000); 
+        }
+    </script>
+</body>
+</html>
